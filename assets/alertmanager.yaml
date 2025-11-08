@@ -1,0 +1,70 @@
+global:
+  resolve_timeout: 5m
+  # URL del Webhook de Slack (reemplaza con la tuya)
+  slack_api_url: 'https://hooks.slack.com/services/XXXXXXXXX/XXXXXXXXX/XXXXXXXXXXXXXXXXXXXX' # Reemplaza con tu URL de Slack
+
+route:
+  group_by: ['alertname', 'job', 'severity']
+  group_wait: 10s
+  group_interval: 1m
+  repeat_interval: 10m
+  receiver: 'slack'
+  routes:
+    # Ignorar alertas de Watchdog (prueba interna)
+    - match:
+        alertname: Watchdog
+      receiver: 'null'
+
+    # Canal para alertas críticas
+    - match:
+        severity: 'critical'
+      receiver: 'slack-critical'
+
+receivers:
+  # Receptor nulo (para Watchdog u otras alertas de prueba)
+  - name: 'null'
+
+  # 🔴 Canal para alertas críticas
+  - name: 'slack-critical'
+    slack_configs:
+      - slack_api_url: 'https://hooks.slack.com/services/XXXXXXXXX/XXXXXXXXX/XXXXXXXXXXXXXXXXXXXX' # Reemplaza con tu URL de Slack
+        channel: '#naesman-prometheus-alarms' # Puedes usar el mismo canal o uno diferente
+        send_resolved: true
+        title: >
+          {{ if eq .Status "firing" }}
+          🚨 [{{ .Status | toUpper }}] {{ .CommonLabels.alertname }} ({{ .CommonLabels.severity | toUpper }})
+          {{ else }}
+          ✅ [{{ .Status | toUpper }}] {{ .CommonLabels.alertname }} ({{ .CommonLabels.severity | toUpper }})
+          {{ end }}
+        text: >-
+          {{ range .Alerts -}}
+          *Estado:* `{{ .Status }}`
+          *Alerta:* `{{ .Labels.alertname }}`
+          *Severidad:* `{{ .Labels.severity }}`
+          *Descripción:* {{ .Annotations.description }}
+          {{ if .Labels.pod }}*Pod:* `{{ .Labels.pod }}`{{ end }}
+          {{ if .Labels.container }}*Contenedor:* `{{ .Labels.container }}`{{ end }}
+          {{ if .Labels.namespace }}*Namespace:* `{{ .Labels.namespace }}`{{ end }}
+          {{ if .Labels.instance }}*Instancia:* `{{ .Labels.instance }}`{{ end }}
+          {{ if eq .Status "resolved" }}🟢 *La alerta ha sido resuelta.*{{ end }}
+          {{ end }}
+
+  # 🔵 Canal para alertas informativas o de nivel normal
+  - name: 'slack'
+    slack_configs:
+      - slack_api_url: 'https://hooks.slack.com/services/XXXXXXXXX/XXXXXXXXX/XXXXXXXXXXXXXXXXXXXX'
+        channel: '#naesman-prometheus-alarms' # Puedes usar el mismo canal o uno diferente
+        send_resolved: true
+        title: >
+          {{ if eq .Status "firing" }}
+          ℹ️ [{{ .Status | toUpper }}] {{ .CommonLabels.alertname }}
+          {{ else }}
+          ✅ [{{ .Status | toUpper }}] {{ .CommonLabels.alertname }}
+          {{ end }}
+        text: >-
+          {{ range .Alerts -}}
+          *Estado:* `{{ .Status }}`
+          *Descripción:* {{ .Annotations.description }}
+          {{ if .Labels.pod }}*Pod:* `{{ .Labels.pod }}`{{ end }}
+          {{ if eq .Status "resolved" }}🟢 *La alerta ha sido resuelta.*{{ end }}
+          {{ end }}
