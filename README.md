@@ -362,9 +362,9 @@ Haz clic en el botón **"Add Incoming WebHooks integration"**.
 
 Abre el archivo `alertmanager.yaml` de este repositorio.
 
-**PEGA** tu `"Webhook URL"` secreta en los dos campos que dicen **`slack_api_url: '...TU_URL_AQUI...'`**.
+**PEGA** tu `"Webhook URL"` secreta en los tres campos que dicen **`slack_api_url: '# Reemplaza con tu URL de Slack'`**.
 
-CAMBIA el `channel`: al nombre exacto de tu canal de Slack (ej. `#naesman-prometheus-alarms`).
+CAMBIA el `channel`: al nombre exacto de tu canal de Slack (ej. `#naesman-prometheus-alarms`). 
 
 Aplica la configuración al clúster:
 
