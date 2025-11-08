@@ -205,8 +205,8 @@ sudo apt install python3 python3-pip python3-venv
 ####  Clona este repositorio
 
 ```Bash
-git clone https://github.com/naesman1/LP-practica-final.git
-cd LP-practica-final
+git clone https://github.com/KeepCodingCloudDevops12/mnarvaiz-lp-practica-final
+cd mnarvaiz-lp-practica-final
 ```
 
 ####  Probar localmente
